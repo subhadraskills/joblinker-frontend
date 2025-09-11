@@ -17,17 +17,14 @@ export default function Signup() {
       setMessage("All fields are required");
       return;
     }
-
+    console.log(name,email,password);  
     try {
-      const res = await axios.post(
+      await axios.post(
         `${API_URL}/api/auth/signup`,
         { name, email, password },
-        { withCredentials: true }
+
       );
-
-      localStorage.setItem("currentUser", JSON.stringify(res.data.user));
-      localStorage.setItem("token", res.data.token);
-
+     
       setMessage("Signup successful!");
       navigate("/"); 
     } catch (err: any) {

@@ -8,13 +8,18 @@ export default function AddLink() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const storedUser = localStorage.getItem("currentUser");
-  const currentUser = storedUser ? JSON.parse(storedUser).name : null;
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const currentUser = parsedUser?.name || null;
+  const token = parsedUser?.token || null;
+  const userId = parsedUser?.id || null;
 
+  console.log(token);
+   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!currentUser) {
+    if (!currentUser) {  
       setMessage("Please login first to add a job link");
       return;
     }
@@ -24,14 +29,18 @@ export default function AddLink() {
     }
 
     try {
-      
+      console.log("userId",userId);      
       await axios.post(
         `${API_URL}/api/jobs`,
-        { url: link, owner: currentUser },
-        { withCredentials: true } 
-      );
+        { url: link,ownerId: userId }, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );   
 
-      setLink("");
+      setLink("res.data");
       setMessage("Job link added successfully!");
 
  

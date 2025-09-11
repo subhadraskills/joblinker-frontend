@@ -5,31 +5,39 @@ import { API_URL } from "../lib/config";
 interface JobLink {
   id: number;
   url: string;
-  owner: string;
+  owner: {
+    id: number;
+    name: string;
+    email: string;
+  };
   createdAt: string;
 }
 
 export default function Home() {
   const [links, setLinks] = useState<JobLink[]>([]);
-  const storedUser = localStorage.getItem("currentUser");
-  const currentUser = storedUser ? JSON.parse(storedUser).name : null;
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const currentUser = parsedUser?.name || null;
+  const token = parsedUser?.token || null;
 
- 
   useEffect(() => {
     const fetchLinks = async () => {
       try {
         const res = await axios.get(`${API_URL}/api/jobs`, {
-          withCredentials: true, 
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        setLinks(res.data);
+        console.log(res.data);
+        setLinks(res.data.jobs);
       } catch (err) {
-        console.error(err);
+        localStorage.removeItem("user");
       }
     };
-    fetchLinks();
-  }, []);
 
- 
+    if (token) fetchLinks();
+  }, [token]);
+
   const handleDelete = async (id: number) => {
     try {
       await axios.delete(`${API_URL}/api/jobs/${id}`, {
@@ -41,7 +49,6 @@ export default function Home() {
     }
   };
 
-  
   const handleEdit = async (id: number) => {
     const linkToEdit = links.find((link) => link.id === id);
     if (!linkToEdit) return;
@@ -66,7 +73,6 @@ export default function Home() {
     }
   };
 
- 
   const timeAgo = (createdAt: string) => {
     const now = new Date();
     const past = new Date(createdAt);
@@ -101,12 +107,14 @@ export default function Home() {
             >
               {link.url}
             </a>
-            <p className="text-gray-500 mb-1">Added by: {link.owner}</p>
+            <p className="text-gray-500 mb-1">
+              Added by: {link.owner.name} ({link.owner.email})
+            </p>
             <p className="text-gray-400 text-sm mb-2">
               Added: {timeAgo(link.createdAt)}
             </p>
 
-            {currentUser === link.owner && (
+            {currentUser === link.owner.name && (
               <div className="flex gap-2 mt-auto">
                 <button
                   onClick={() => handleEdit(link.id)}
@@ -128,3 +136,6 @@ export default function Home() {
     </div>
   );
 }
+
+
+
