@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../lib/config";
-
+import { Button } from "./ui/button";
+   
 interface JobLink {
   id: number;
   url: string;
@@ -38,29 +39,37 @@ export default function Home() {
     if (token) fetchLinks();
   }, [token]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number,ownerId: number) => {
+    console.log(id,ownerId);     
     try {
-      await axios.delete(`${API_URL}/api/jobs/${id}`, {
-        withCredentials: true,
-      });
+      await axios.delete(`${API_URL}/api/jobs/${id}/${ownerId}`,  {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });         
       setLinks(links.filter((link) => link.id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleEdit = async (id: number) => {
+  const handleEdit = async (id: number,ownerId: Number) => {
     const linkToEdit = links.find((link) => link.id === id);
+    console.log("linkEdit",linkToEdit);       
     if (!linkToEdit) return;
-
+    console.log(id,ownerId);   
     const newUrl = prompt("Update your job link:", linkToEdit.url);
+    console.log("newURl",newUrl);      
     if (!newUrl) return;
 
     try {
-      await axios.put(
-        `${API_URL}/api/jobs/${id}`,
-        { url: newUrl },
-        { withCredentials: true }
+      await axios.put(   
+        `${API_URL}/api/jobs/${id}/${ownerId}`,
+        { url: newUrl },{   
+        headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setLinks(
@@ -117,18 +126,25 @@ export default function Home() {
             {currentUser === link.owner.name && (
               <div className="flex gap-2 mt-auto">
                 <button
-                  onClick={() => handleEdit(link.id)}
+                  onClick={() => handleEdit(link.id,link.owner.id)}
                   className="bg-yellow-400 px-3 py-1 rounded"
                 >
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDelete(link.id)}
+                 {/* <button
+                  onClick={() => handleDelete(link.id,link.owner.id)}
                   className="bg-red-500 px-3 py-1 rounded text-white"
                 >
                   Delete
-                </button>
-              </div>
+                </button>          */}
+                <Button 
+                  onClick={() => handleDelete(link.id, link.owner.id)}
+                   variant="link"
+                   size="sm"
+                   className="bg-blue-400"
+                    >
+                 Delete</Button>     
+              </div>      
             )}
           </div>
         ))

@@ -6,6 +6,8 @@ import Login from "./components/Login";
 import Home from "./components/Home";
 import AddLink from "./components/AddLink";
 import { Sidebar } from "./components/sidebar";
+import "./index.css";
+
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
